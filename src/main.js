@@ -7,7 +7,7 @@ class Participant {
     }
 
     sign(data) {
-        let sig = new jsrsasign.KJUR.crypto.Signature({"alg": "SHA1withRSA"});
+        let sig = new jsrsasign.KJUR.crypto.Signature({"alg": "SHA256withRSA"});
 
         sig.init(this.selfPvtKey);
         sig.updateString(data);
@@ -16,7 +16,7 @@ class Participant {
     }
 
     verify(data, sigValueHex) {
-        let sig = new jsrsasign.KJUR.crypto.Signature({"alg": "SHA1withRSA"});
+        let sig = new jsrsasign.KJUR.crypto.Signature({"alg": "SHA256withRSA"});
 
         sig.init(this.otherPubKey);
         sig.updateString(data);
@@ -79,7 +79,7 @@ function openCar() {
     console.log("Trinket's signature: " + replySign);
 
     console.log("Car verifies challenge from trinket");
-    isValid = Car.verify(trinketReply, replySign + 'a');
+    isValid = Car.verify(trinketReply, replySign);
     if(!isValid || Car.lastChallenge !== Car.otherChallenge) {
         console.log("Validation failed");
         return;
