@@ -48,44 +48,74 @@ console.log("Keys generated!");
 const Car = new Participant(carKeypair.prvKeyObj, trinketKeypair.pubKeyObj);
 const Trinket = new Participant(trinketKeypair.prvKeyObj, carKeypair.pubKeyObj);
 
-function openCar() {
+function trinketSendsSignedCommandAndRandomToCar() {
     let trinketMessage = "OPEN|" + Trinket.getChallenge();
     let trinketSign = Trinket.sign(trinketMessage);
     console.log("Trinket sends signed (command + challenge) to the car: " + trinketMessage);
     console.log("Trinket's signature: " + trinketSign);
 
-    console.log("Car verifies trinket's message");
-    let isValid = Car.verify(trinketMessage, trinketSign);
-    if(!isValid) {
-        console.log("Validation failed");
-        return;
-    }
+    return {msg: trinketMessage, sgn: trinketSign};
+}
 
+function carVerifiesTrinketMessage(trinketMessage) {
+    console.log("Car verifies trinket's message");
+    let isValid = Car.verify(trinketMessage.msg, trinketMessage.sgn);
+    if(!isValid) {
+        throw new Error("Validation failed");
+    }
+}
+
+function carSendsSignedRandomAndChallengeToTrinket() {
     let carMessage = Car.otherChallenge + "|" + Car.getChallenge();
     let carSign = Car.sign(carMessage);
     console.log("Car sends signed (trinket's challenge + car's challenge) to the trinket: " + carMessage);
     console.log("Car's signature: " + carSign);
 
-    console.log("Trinket verifies car's message");
-    isValid = Trinket.verify(carMessage, carSign);
-    if(!isValid || Trinket.lastChallenge !== carMessage.split("|")[0]) {
-        console.log("Validation failed");
-        return;
-    }
+    return {msg: carMessage, sgn: carSign};
+}
 
+function trinketVerifiesCarMessage(carMessage) {
+    console.log("Trinket verifies car's message");
+    let isValid = Trinket.verify(carMessage.msg, carMessage.sgn);
+    if(!isValid || Trinket.lastChallenge !== carMessage.msg.split("|")[0]) {
+        throw new Error("Validation failed");
+    }
+}
+
+function trinketSendsSignedChallengeBackToCar() {
     let trinketReply = "|" + Trinket.otherChallenge;
     let replySign = Trinket.sign(trinketReply);
     console.log("Trinket sends signed car's challenge to the car: " + trinketReply);
     console.log("Trinket's signature: " + replySign);
+    return {msg: trinketReply, sgn: replySign};
+}
 
+function carVerifiesReplyFromTrinket(trinketReply) {
     console.log("Car verifies challenge from trinket");
-    isValid = Car.verify(trinketReply, replySign);
+    let isValid = Car.verify(trinketReply.msg, trinketReply.sgn);
     if(!isValid || Car.lastChallenge !== Car.otherChallenge) {
-        console.log("Validation failed");
-        return;
+        throw new Error("Validation failed");
     }
+}
 
+function carOpens() {
     console.log("Car opens!");
+}
+
+function openCar() {
+    let trinketMessage = trinketSendsSignedCommandAndRandomToCar();
+
+    carVerifiesTrinketMessage(trinketMessage);
+
+    let carMessage = carSendsSignedRandomAndChallengeToTrinket();
+
+    trinketVerifiesCarMessage(carMessage);
+
+    let replyMessage = trinketSendsSignedChallengeBackToCar();
+
+    carVerifiesReplyFromTrinket(replyMessage);
+
+    carOpens();
 }
 
 openCar();
