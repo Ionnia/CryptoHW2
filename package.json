@@ -9,5 +9,9 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "jsrsasign": "^10.0.4",
+    "jsrsasign-util": "^1.0.2"
+  }
 }
