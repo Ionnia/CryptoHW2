@@ -32,8 +32,8 @@ class Participant {
 
     getChallenge() {
         let random = "";
-        while(random.length < 256) {
-            random += Math.random().toString(36).slice(2,10);
+        while(random.length < 128) {
+            random += Math.random().toString(16).slice(2,10);
         }
         this.lastChallenge = random;
         return random;
